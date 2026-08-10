@@ -1,9 +1,11 @@
 # Motherfucking_Print_Server
-A non-native print server based on Node.js leveraging SumatraPDF and headless printing. Allows sharing the host's printers whether physical, virtual or even ones it's connected through the network (Currently untested)
+A non-native print server based on Node.js leveraging SumatraPDF and headless printing on Windows. Allows sharing the host's printers whether physical, virtual or even ones it's connected through the network (Currently untested)
 
 Vibecoded with Google Gemini. Sorry not sorry.
 
-# 🖨️ Local Color Print Server
+This project is posted as is and is not going to be updated or work on as it satisfies my needs, if you need to add features you have to make them yourself, my apologies.
+
+## 🖨️ Local Color Print Server
 
 A zero-external-dependency, headless local print server solution built with Node.js, PowerShell, and Native VBS scripts. Bypasses restrictive legacy printing setups to enable seamless, direct full-color printing through a lightweight local web dashboard.
 
@@ -46,16 +48,22 @@ Prerequisites:
 
 ---
 
-## 🖨 How to operate
+## 🖨  How to operate
 
-1. Go to the dashboard and select a file (currently known to work with pdf, jpg, png, and perhaps whatever SumartaPDF supports),
-2. Preview: Powered by CDN-ed PDF.js and some CSS styling it should theoretically show an accurate representation of the printed outcome on an A4 paper. Hard to predict when messing around with paper size menu as it depends on the printer driver (tested on EPSON L3060 Series)
+1. Go to the dashboard and select a file (currently known to work with pdf, jpg, png, and perhaps whatever SumatraPDF supports),
+2. Preview: Powered by CDN-ed PDF.js and some CSS styling it should theoretically show an accurate representation of the printed outcome on A4 paper. Hard to predict when messing around with paper size menu as it depends on the printer driver (tested on EPSON L3060 Series)
 3. Settings:
     - Printers: The server automatically pulls all the printers (theoretically even shared ones it's connected to) of the host, Open in Server formerly used to be "Default printer" which theoretically doesn't exist, the OS just preselects whatever deemed the default. If selected will just open the file in SumatraPDF on the server. Left thinking may be useful.
     - Paper Size: This option maps the content to the selected paper size, the preview is an approximate representation of it printed on an A4 paper.
     - Color Mode: Full color or Monochrome, most color printers default to color printing unless told otherwise, non color printers either will throw an error or fallback to monochrome automatically.
     - Copies: Self explanatory, how many copies of the file to print.
-    - 
+    - Pages: Accepts both select pages and page ranges, the preview adjusts accordingly.
+
+## ⚠️ Limitations
+
+**IP Access Only:** To keep it dependency-free the dashboard can be accessed only through the exact IPv4 address of the host or through mDNS with the Host's name with a .local link. Unless you don't mind your PC being renamed into `printer` you will be using IP access, conveniently displayed in the tray menu by right clicking the icon. 
+
+**Auto Orientation:** SumatraPDF just flips the pages of PDFs with the contents so in the end nothing changes. If feed it a properly made PDF (each page can have it's own orientation and paper size) SumatraPDF will obey and print as is in the PDF with the default settings, I know it's a hassle, but if you have a better solution you're very welcome to make it.
 
 ## 📜 License & Copyleft
 
