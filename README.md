@@ -22,7 +22,11 @@ A zero-external-dependency, headless local print server solution built with Node
 ├── launch.vbs     # Silent background launcher
 ├── stop.vbs       # Background process killer script
 ├── README.md      # Documentation
-└── LICENSE        # WTFPL text file
+├── LICENSE        # WTFPL text file
+├── server.pid     # Appears after the first time launch, contains the process ID (PID) so stop.vbs kills
+                     only the server without needing to terminate Node runtime which may result in
+                     other processes being killed
+└── tray.pid       # Same as server.pid but for the tray so it doesn't stay hanging as a dummy UI
 ```
 
 ---
