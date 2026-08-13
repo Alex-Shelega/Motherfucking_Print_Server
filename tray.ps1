@@ -3,6 +3,11 @@ Add-Type -AssemblyName System.Drawing
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $nodeScript = Join-Path $scriptDir "server.js"
+$trayPidFile = Join-Path $scriptDir "tray.pid"
+$serverPidFile = Join-Path $scriptDir "server.pid"
+
+# Save the tray process PID
+$PID | Out-File -FilePath $trayPidFile -Encoding ascii -Force
 
 # Detect local network IPv4 address
 $localIp = (Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias "Wi-Fi","Ethernet" -ErrorAction SilentlyContinue | 
@@ -20,6 +25,11 @@ $networkUrl = "http://${localIp}:3000"
 
 # Start Node process hidden
 $nodeProcess = Start-Process -FilePath "node" -ArgumentList "`"$nodeScript`"" -WindowStyle Hidden -PassThru
+
+# Save Node process PID
+if ($nodeProcess) {
+    $nodeProcess.Id | Out-File -FilePath $serverPidFile -Encoding ascii -Force
+}
 
 # Setup Tray Icon
 $notifyIcon = New-Object System.Windows.Forms.NotifyIcon
@@ -57,6 +67,11 @@ $itemExit.add_Click({
     if ($nodeProcess -and -not $nodeProcess.HasExited) {
         Stop-Process -Id $nodeProcess.Id -Force -ErrorAction SilentlyContinue
     }
+    
+    # Clean up PID files on exit
+    Remove-Item $trayPidFile -Force -ErrorAction SilentlyContinue
+    Remove-Item $serverPidFile -Force -ErrorAction SilentlyContinue
+
     $notifyIcon.Visible = $false
     $notifyIcon.Dispose()
     [System.Windows.Forms.Application]::Exit()
@@ -71,6 +86,14 @@ $notifyIcon.add_DoubleClick({
 
 # Show startup notification with the exact network URL
 $notifyIcon.ShowBalloonTip(2500, "Print Station Live", "Network URL: $networkUrl", [System.Windows.Forms.ToolTipIcon]::Info)
+
+# Clean up tray.pid if process is killed externally
+[System.AppDomain]::CurrentDomain.add_ProcessExit({
+    $notifyIcon.Visible = $false
+    $notifyIcon.Dispose()
+    Remove-Item $trayPidFile -Force -ErrorAction SilentlyContinue
+    Remove-Item $serverPidFile -Force -ErrorAction SilentlyContinue
+})
 
 # Keep message loop active
 [System.Windows.Forms.Application]::Run()

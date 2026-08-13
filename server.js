@@ -671,17 +671,53 @@ function startServer() {
       return res.end(HTML_PAGE);
     }
 
+    // ==========================================
+    // SERVER CONTROL ENDPOINTS (Shutdown / Restart)
+    // ==========================================
     if (req.method === 'POST' && pathname === '/shutdown') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'shutting_down' }));
 
       setTimeout(() => {
-        console.log('\n[SHUTDOWN] Server termination requested via UI.\n');
+        console.log('\n[SHUTDOWN] Terminating tray app and stopping server...\n');
+
+        // 1. Kill PowerShell Tray app if tray.pid exists
+        const trayPidFile = path.join(__dirname, 'tray.pid');
+        if (fs.existsSync(trayPidFile)) {
+          try {
+            const trayPid = fs.readFileSync(trayPidFile, 'utf8').trim();
+            if (trayPid) {
+              require('child_process').execSync(`taskkill /F /PID ${trayPid}`, { windowsHide: true });
+            }
+            fs.unlinkSync(trayPidFile);
+          } catch (e) {}
+        }
+
+        // 2. Destroy open sockets & clean server PID
         for (const socket of sockets) socket.destroy();
         sockets.clear();
-        cleanupPid();
+
+        const serverPidFile = path.join(__dirname, 'server.pid');
+        if (fs.existsSync(serverPidFile)) {
+          try { fs.unlinkSync(serverPidFile); } catch (e) {}
+        }
+
+        // 3. Exit Node
         process.exit(0);
-      }, 300);
+      }, 100);
+      return;
+    }
+
+    if (req.method === 'POST' && pathname === '/restart') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'restarting' }));
+
+      setTimeout(() => {
+        console.log('\n[RESTART] Restarting server...\n');
+        for (const socket of sockets) socket.destroy();
+        sockets.clear();
+        process.exit(0); // Assumes launch manager/script handles auto-restart on exit
+      }, 100);
       return;
     }
 
